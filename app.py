@@ -11,7 +11,7 @@ from utils import SpecificStringStoppingCriteria
 
 # Streamlit UI
 st.title("🧠 Math LLM Demo")
-st.write("💬 Please prompt me something!")
+st.write("💬 Please prompt something!")
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -23,6 +23,7 @@ generation_util = [
     ]
 mistral_path = 'jonathantiedchen/MistralMath-CPT-IFT'
 
+### LOAD MODELS FUNCTIONS
 #LOAD MISTRAL
 @st.cache_resource
 def load_mistral():
@@ -41,13 +42,20 @@ def load_mistral():
         
     return model, tokenizer
 
-st.sidebar.write("📥 Load all Models.")
-with st.sidebar:
-    mistral, mistral_tokenizer = load_mistral()
-st.sidebar.write(f"✅ Successfully loaded Mistral.")
+#LOAD ALL MODELS EXECUTION
+st.sidebar:
+    with st.spinner:("📥 Load all Models. That might take a while.")
+        with st.sidebar:
+            mistral, mistral_tokenizer = load_mistral()
+        st.sidebar.write(f"✅ Successfully loaded Mistral.")
 
 
 
+# BEGIN THE PROMPTING
+# TO ADD: 
+# - add a tab where gsm8k questions are randomly prompted. 
+# - in the gsm8k tab the user has a drop down or other method to choose a gsm8k question
+# - add a history of the prompts similar to chat format 
 prompt = st.text_area("Enter your math prompt:", "Jasper has 5 apples and eats 2 of them. How many apples does he have left?")
 
 if st.button("Generate Response", key="manual"):
