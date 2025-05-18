@@ -1,5 +1,4 @@
 import os
-
 import streamlit as st
 from huggingface_hub import hf_hub_download
 from unsloth import FastLanguageModel,is_bfloat16_supported
@@ -8,7 +7,6 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, StoppingCriteriaLi
 import importlib
 import random
 from datasets import load_dataset
-from utils import SpecificStringStoppingCriteria
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -54,17 +52,18 @@ if st.button("Generate Response", key="manual"):
         
         #MISTRAL PROMPTING
         inputs = mistral_tokenizer(prompt, return_tensors="pt").to(mistral.device)
-        stop_criteria = SpecificStringStoppingCriteria(mistral_tokenizer, generation_util, len(input_text))
-        stopping_criteria_list = StoppingCriteriaList([stop_criteria])
         with torch.no_grad():
             outputs = mistral.generate(
                 **inputs, 
                 max_new_tokens=512, 
                 pad_token_id=mistral_tokenizer.eos_token_id, 
-                stopping_criteria=stopping_criteria_list
+                eos_token_id=mistral_tokenizer.eos_token_id
             )
-        generated_text = mistral_tokenizer.decode(output[0], skip_special_tokens=True)
-        response_only = generated_text[len(prompt):].strip()
+        generated_text = mistral_tokenizer.decode(outputs[0], skip_special_tokens=True)
+        if generated_text.startswith(prompt):
+            response_only = generated_text[len(prompt):].strip()
+        else:
+            response_only = generated_text.strip()
 
     st.subheader("🔎 Prompt")
     st.code(prompt)
