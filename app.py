@@ -26,7 +26,6 @@ try:
     st.sidebar.write("Model Downloaded Successfully")
 except Exception as e:
     st.sidebar.error(f"⚠️ Failed to load Mistral model with Unsloth: {e}")
-    continue
 
 # Streamlit UI
 st.title("🧠 Math LLM Demo")
