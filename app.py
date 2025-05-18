@@ -8,6 +8,10 @@ import importlib
 import random
 from datasets import load_dataset
 
+# Streamlit UI
+st.title("🧠 Math LLM Demo")
+st.write("💬 Please prompt me something!")
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Some Specifications
@@ -36,34 +40,33 @@ def load_mistral():
         
     return model, tokenizer
 
-st.sidebar.write("📥 Load Models.")
-mistral, mistral_tokenizer = load_mistral()
+st.sidebar.write("📥 Load all Models.")
+with st.sidebar:
+    mistral, mistral_tokenizer = load_mistral()
 st.sidebar.write(f"✅ Successfully loaded Mistral.")
 
 
-# Streamlit UI
-st.title("🧠 Math LLM Demo")
-st.write("💬 Please prompt me something!")
 
 prompt = st.text_area("Enter your math prompt:", "Jasper has 5 apples and eats 2 of them. How many apples does he have left?")
 
 if st.button("Generate Response", key="manual"):
-    with st.sidebar.spinner("🔄 Generating..."):
-        
-        #MISTRAL PROMPTING
-        inputs = mistral_tokenizer(prompt, return_tensors="pt").to(mistral.device)
-        with torch.no_grad():
-            outputs = mistral.generate(
-                **inputs, 
-                max_new_tokens=512, 
-                pad_token_id=mistral_tokenizer.eos_token_id, 
-                eos_token_id=mistral_tokenizer.eos_token_id
-            )
-        generated_text = mistral_tokenizer.decode(outputs[0], skip_special_tokens=True)
-        if generated_text.startswith(prompt):
-            response_only = generated_text[len(prompt):].strip()
-        else:
-            response_only = generated_text.strip()
+    with st.sidebar:
+        with st.spinner("🔄 Generating..."):
+            
+            #MISTRAL PROMPTING
+            inputs = mistral_tokenizer(prompt, return_tensors="pt").to(mistral.device)
+            with torch.no_grad():
+                outputs = mistral.generate(
+                    **inputs, 
+                    max_new_tokens=512, 
+                    pad_token_id=mistral_tokenizer.eos_token_id, 
+                    eos_token_id=mistral_tokenizer.eos_token_id
+                )
+            generated_text = mistral_tokenizer.decode(outputs[0], skip_special_tokens=True)
+            if generated_text.startswith(prompt):
+                response_only = generated_text[len(prompt):].strip()
+            else:
+                response_only = generated_text.strip()
 
     st.subheader("🔎 Prompt")
     st.code(prompt)
