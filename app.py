@@ -7,6 +7,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, StoppingCriteriaLi
 import importlib
 import random
 from datasets import load_dataset
+from utils import SpecificStringStoppingCriteria
 
 # Streamlit UI
 st.title("🧠 Math LLM Demo")
@@ -55,12 +56,14 @@ if st.button("Generate Response", key="manual"):
             
             #MISTRAL PROMPTING
             inputs = mistral_tokenizer(prompt, return_tensors="pt").to(mistral.device)
+            stop_criteria = SpecificStringStoppingCriteria(mistral_tokenizer, generation_util, len(prompt))
+            stopping_criteria_list = StoppingCriteriaList([stop_criteria])
             with torch.no_grad():
                 outputs = mistral.generate(
                     **inputs, 
                     max_new_tokens=512, 
                     pad_token_id=mistral_tokenizer.eos_token_id, 
-                    eos_token_id=mistral_tokenizer.eos_token_id
+                    stopping_criteria=stopping_criteria_list
                 )
             generated_text = mistral_tokenizer.decode(outputs[0], skip_special_tokens=True)
             if generated_text.startswith(prompt):
@@ -69,8 +72,8 @@ if st.button("Generate Response", key="manual"):
                 response_only = generated_text.strip()
 
     st.subheader("🔎 Prompt")
-    st.code(prompt)
+    st.write(prompt)
     st.subheader("🧠 Model Output")
-    st.code(generated_text)
+    st.write(generated_text)
     st.subheader("✂️ Response Only")
     st.success(response_only)
