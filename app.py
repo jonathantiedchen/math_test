@@ -45,9 +45,8 @@ def load_mistral():
 #LOAD ALL MODELS EXECUTION
 with st.sidebar:
     with st.spinner:("📥 Load all Models. That might take a while.")
-        with st.sidebar:
-            mistral, mistral_tokenizer = load_mistral()
-        st.sidebar.write(f"✅ Successfully loaded Mistral.")
+        mistral, mistral_tokenizer = load_mistral()
+    st.sidebar.write(f"✅ Successfully loaded Mistral.")
 
 
 
