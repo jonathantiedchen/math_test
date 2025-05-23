@@ -36,8 +36,8 @@ mistral_models = {
 
 all_models = gpt_models | mistral_models
 
-gpt_path = 'jonathantiedchen/GPT2-Small-CPT-CL-IFT'
-mistral_path = 'jonathantiedchen/MistralMath-CPT-IFT'
+# gpt_path = 'jonathantiedchen/GPT2-Small-CPT-CL-IFT'
+# mistral_path = 'jonathantiedchen/MistralMath-CPT-IFT'
 
 
 ### LOAD MODELS FUNCTIONS
@@ -45,6 +45,9 @@ mistral_path = 'jonathantiedchen/MistralMath-CPT-IFT'
 @st.cache_resource
 def load_mistral(mistral_path, models):
     try:
+        # Extract model name from path for dictionary key
+        name = mistral_path.split('/')[-1]
+        
         model, tokenizer = FastLanguageModel.from_pretrained(
                             model_name=mistral_path,
                             max_seq_length=2048,
@@ -54,19 +57,19 @@ def load_mistral(mistral_path, models):
         if tokenizer.pad_token is None:
             tokenizer.pad_token = tokenizer.eos_token
         FastLanguageModel.for_inference(model)
-        models[name] = {"tokenizer": tokenizer, "model": model}
+        models[mistral_path] = {"tokenizer": tokenizer, "model": model}
     except Exception as e:
         st.sidebar.error(f"⚠️ Failed to load Mistral model with Unsloth: {e}")
     
     return models
 
 @st.cache_resource
-def load_gpts(path):
-    try: 
+def load_gpts(path, models):
+    try:
         tokenizer = AutoTokenizer.from_pretrained(path)
         model = AutoModelForCausalLM.from_pretrained(path).to(device)
         model.eval()
-        models[name] = {"tokenizer": tokenizer, "model": model}
+        models[path] = {"tokenizer": tokenizer, "model": model}
     except Exception as e:
         st.sidebar.error(f"⚠️ Failed to load GPT model: {e}")
         
@@ -75,18 +78,25 @@ def load_gpts(path):
 
 ###########################
 #LOAD ALL MODELS EXECUTION
-models={}
+models = {}
 with st.sidebar:
-    with st.spinner:("📥 Load all Models. That might take a while.")
-        models = load_mistral(mistral_path, models)
-        models = load_mistral(gpt_path, models)
-    st.sidebar.write(f"✅ Successfully loaded Mistral.")
+    with st.spinner("📥 Load all Models. That might take a while."):
+        # Load each model using the paths from the dictionaries
+        for model_path in mistral_models.values():
+            models = load_mistral(model_path, models)
+        for model_path in gpt_models.values():
+            models = load_gpts(model_path, models)
+    st.write("✅ Successfully loaded all models.")
 
 ##########################
 #Select a model
 model_choice = st.selectbox("Choose a model:", list(all_models.keys()))
-tokenizer = models[model_choice]["tokenizer"]
-model = models[model_choice]["model"]
+
+# Get the actual model path from the dictionary
+model_path = all_models[model_choice]
+
+tokenizer = models[model_path]["tokenizer"]
+model = models[model_path]["model"]
 
 # BEGIN THE PROMPTING
 # TO ADD: 
@@ -109,24 +119,21 @@ if st.button("Generate Response", key="manual"):
             # Statement to check model version, different model need different prompting strategy
             if 'mistral' in model_choice.lower():
                 #MISTRAL PROMPTING
-                inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
-                stop_criteria = SpecificStringStoppingCriteria(tokenizer, generation_util, len(prompt))
-                stopping_criteria_list = StoppingCriteriaList([stop_criteria])
                 with torch.no_grad():
-                    outputs = mistral.generate(
+                    outputs = model.generate(
                         **inputs, 
                         max_new_tokens=512, 
-                        pad_token_id=mistral_tokenizer.eos_token_id, 
+                        pad_token_id=tokenizer.eos_token_id, 
                         stopping_criteria=stopping_criteria_list
                     )
-                generated_text = mistral_tokenizer.decode(outputs[0], skip_special_tokens=True)
+                generated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
                 if generated_text.startswith(prompt):
                     response_only = generated_text[len(prompt):].strip()
                 else:
                     response_only = generated_text.strip()
            
             #gpt2 small prompting        
-            elif 'small' in model_choice.lower(): 
+            elif 'small' in model_choice.lower() or 'gpt' in model_choice.lower(): 
                 output = model.generate(
                     **inputs,
                     max_new_tokens=512,
@@ -138,7 +145,9 @@ if st.button("Generate Response", key="manual"):
                 response_only = generated_text[len(prompt):].strip()
 
             else: 
-                "⚠️ Problems in identifying the model."
+                st.error("⚠️ Problems in identifying the model.")
+                generated_text = "Error: Model not recognized"
+                response_only = "Error: Model not recognized"
 
     st.subheader("🔎 Prompt")
     st.write(prompt)
