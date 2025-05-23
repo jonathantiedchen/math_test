@@ -13,7 +13,6 @@ from cot import EIGHT_SHOT_PROMPT, FOUR_SHOT_PROMPT
 # Streamlit UI
 st.title("🧠 Math LLM Demo")
 st.write("💬 Please prompt something!")
-
 use_cot = st.toggle("Use Chain-of-Thought Prompt")
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
