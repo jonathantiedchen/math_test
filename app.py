@@ -43,11 +43,8 @@ all_models = gpt_models | mistral_models
 ### LOAD MODELS FUNCTIONS
 #LOAD MISTRAL
 @st.cache_resource
-def load_mistral(mistral_path, models):
+def load_mistral(mistral_path, _models):
     try:
-        # Extract model name from path for dictionary key
-        name = mistral_path.split('/')[-1]
-        
         model, tokenizer = FastLanguageModel.from_pretrained(
                             model_name=mistral_path,
                             max_seq_length=2048,
@@ -57,23 +54,23 @@ def load_mistral(mistral_path, models):
         if tokenizer.pad_token is None:
             tokenizer.pad_token = tokenizer.eos_token
         FastLanguageModel.for_inference(model)
-        models[mistral_path] = {"tokenizer": tokenizer, "model": model}
+        _models[mistral_path] = {"tokenizer": tokenizer, "model": model}
     except Exception as e:
         st.sidebar.error(f"⚠️ Failed to load Mistral model with Unsloth: {e}")
     
-    return models
+    return _models
 
 @st.cache_resource
-def load_gpts(path, models):
+def load_gpts(path, _models):
     try:
         tokenizer = AutoTokenizer.from_pretrained(path)
         model = AutoModelForCausalLM.from_pretrained(path).to(device)
         model.eval()
-        models[path] = {"tokenizer": tokenizer, "model": model}
+        _models[path] = {"tokenizer": tokenizer, "model": model}
     except Exception as e:
         st.sidebar.error(f"⚠️ Failed to load GPT model: {e}")
         
-    return models
+    return _models
 
 
 ###########################
