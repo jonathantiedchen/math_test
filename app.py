@@ -69,8 +69,7 @@ def load_gpts(path):
         models[name] = {"tokenizer": tokenizer, "model": model}
     except Exception as e:
         st.sidebar.error(f"⚠️ Failed to load GPT model: {e}")
-        continue
-    
+        
     return models
 
 
