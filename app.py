@@ -148,7 +148,7 @@ if st.button("Generate Response", key="manual"):
 
     st.subheader("🔎 Prompt")
     st.write(prompt)
+    #st.subheader("🧠 Model Output")
+    #st.write(generated_text)
     st.subheader("🧠 Model Output")
-    st.write(generated_text)
-    st.subheader("✂️ Response Only")
     st.success(response_only)
