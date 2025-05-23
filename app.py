@@ -8,10 +8,13 @@ import importlib
 import random
 from datasets import load_dataset
 from utils import SpecificStringStoppingCriteria
+from cot import EIGHT_SHOT_PROMPT, FOUR_SHOT_PROMPT
 
 # Streamlit UI
 st.title("🧠 Math LLM Demo")
 st.write("💬 Please prompt something!")
+
+use_cot = st.toggle("Activate feature")
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -104,13 +107,26 @@ model = models[model_path]["model"]
 # - add a history of the prompts similar to chat format 
 prompt = st.text_area("Enter your math prompt:", "Jasper has 5 apples and eats 2 of them. How many apples does he have left?")
 
+if use_cot: 
+    if 'mistral' in model_choice.lower():
+        #use 8 shot prompt
+        prompt_template = EIGHT_SHOT_PROMPT
+        input_text = prompt_template.format(question=prompt)
+
+    elif 'small' in model_choice.lower() or 'gpt' in model_choice.lower(): 
+        #use 4s shot prompt
+        prompt_template = FOUR_SHOT_PROMPT
+        input_text = prompt_template.format(question=prompt)
+else: 
+    input_text = prompt
+
 if st.button("Generate Response", key="manual"):
     with st.sidebar:
         with st.spinner("🔄 Generating..."):
 
             # Configuration needed for all models
-            inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
-            stop_criteria = SpecificStringStoppingCriteria(tokenizer, generation_util, len(prompt))
+            inputs = tokenizer(input_text, return_tensors="pt").to(model.device)
+            stop_criteria = SpecificStringStoppingCriteria(tokenizer, generation_util, len(input_text))
             stopping_criteria_list = StoppingCriteriaList([stop_criteria])
             
             # Statement to check model version, different model need different prompting strategy
@@ -124,8 +140,8 @@ if st.button("Generate Response", key="manual"):
                         stopping_criteria=stopping_criteria_list
                     )
                 generated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
-                if generated_text.startswith(prompt):
-                    response_only = generated_text[len(prompt):].strip()
+                if generated_text.startswith(input_text):
+                    response_only = generated_text[len(input_text):].strip()
                 else:
                     response_only = generated_text.strip()
            
@@ -139,7 +155,7 @@ if st.button("Generate Response", key="manual"):
                     stopping_criteria=stopping_criteria_list
                 )
                 generated_text = tokenizer.decode(output[0], skip_special_tokens=True, clean_up_tokenization_spaces=True)
-                response_only = generated_text[len(prompt):].strip()
+                response_only = generated_text[len(input_text):].strip()
 
             else: 
                 st.error("⚠️ Problems in identifying the model.")
@@ -147,7 +163,7 @@ if st.button("Generate Response", key="manual"):
                 response_only = "Error: Model not recognized"
 
     st.subheader("🔎 Prompt")
-    st.write(prompt)
+    st.write(input_text)
     #st.subheader("🧠 Model Output")
     #st.write(generated_text)
     st.subheader("🧠 Model Output")
