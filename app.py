@@ -87,9 +87,9 @@ st.sidebar.write("📥 Load GSM8K")
 gsm8k_data = load_gsm8k_dataset()
 st.sidebar.write("📊 GSM8K loaded:", len(gsm8k_data), "samples")
 
-question_index = st.sidebar.selectbox("🔢 Select GSM8K question index", range(len(gsm8k_data)))
+question_index = st.selectbox("🔢 Select GSM8K question index", range(len(gsm8k_data)))
 
-if st.sidebar.button("🎲 Pick Random Question"):
+if st.button("🎲 Pick Random Question"):
     question_index = random.randint(0, len(gsm8k_data) - 1)
     st.experimental_set_query_params(question_index=question_index)
 
