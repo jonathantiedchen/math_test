@@ -28,13 +28,15 @@ generation_util = [
 # Need a method which loads all those models and their tokenizer
 # GPT2 Small, GPT2 Large and Mistral need own functions as Large uses LoRA, and Mistral uses unsloth
 gpt_models = {
-    "Vanilla GPT-2": "openai-community/gpt2",
-    "GPT2-Small-CPT-CL-IFT": "jonathantiedchen/GPT2-Small-CPT-CL-IFT"
+    "GPT-2 Small BL": "openai-community/gpt2",
+    "GPT-2 Small CPT+CL+IFT": "jonathantiedchen/GPT2-Small-CPT-CL-IFT"
 }
 
 mistral_models = {
-    "Mistral 7B+CPT+CL+IFT": "jonathantiedchen/MistralMath-CPT-IFT"
+    "Mistral 7B BL": "unsloth/mistral-7b-bnb-4bit",
+    "Mistral 7B CPT+IFT": "jonathantiedchen/MistralMath-CPT-IFT"
 }
+
 
 all_models = gpt_models | mistral_models
 
