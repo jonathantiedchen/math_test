@@ -34,6 +34,7 @@ gpt_models = {
 
 mistral_models = {
     "Mistral 7B BL": "unsloth/mistral-7b-bnb-4bit",
+    "Mistral 7B CPT+CL": "jonathantiedchen/Mistral-7B-CPT-CL",
     "Mistral 7B CPT+IFT": "jonathantiedchen/MistralMath-CPT-IFT"
 }
 
