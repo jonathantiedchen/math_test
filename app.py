@@ -40,8 +40,6 @@ mistral_models = {
 
 all_models = gpt_models | mistral_models
 
-# gpt_path = 'jonathantiedchen/GPT2-Small-CPT-CL-IFT'
-# mistral_path = 'jonathantiedchen/MistralMath-CPT-IFT'
 
 
 ### LOAD MODELS FUNCTIONS
@@ -101,11 +99,9 @@ model = models[model_path]["model"]
 
 # BEGIN THE PROMPTING
 # TO ADD: 
-# - add GPT model
-# - prompting needs to be done different to MISTRAL
-# - add a tab where gsm8k questions are randomly prompted. 
-# - in the gsm8k tab the user has a drop down or other method to choose a gsm8k question
-# - add a history of the prompts similar to chat format 
+# - add drop down where user can choose gsm8k question and a button which selects a random gsm8k question
+# - the selected or random gsm8k question gets put into the prompt text area
+# - (if possible) add a history of the prompts similar to chat format 
 prompt = st.text_area("Enter your math prompt:", "Jasper has 5 apples and eats 2 of them. How many apples does he have left?")
 
 if use_cot: 
