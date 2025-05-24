@@ -91,13 +91,14 @@ question_index = st.selectbox("🔢 Select GSM8K question index", range(len(gsm8
 
 if st.button("🎲 Pick Random Question"):
     question_index = random.randint(0, len(gsm8k_data) - 1)
-    st.experimental_set_query_params(question_index=question_index)
+    st.query_params(question_index=question_index)
 
 default_prompt = "Jasper has 5 apples and eats 2 of them. How many apples does he have left?"
 selected_question = gsm8k_data[question_index]["question"] if question_index is not None else default_prompt
 
 
 # Prompt options
+st.write('##')
 use_cot = st.toggle("Use Chain-of-Thought Prompt")
 model_choice = st.selectbox("Choose a model:", list(all_models.keys()))
 model_path = all_models[model_choice]
