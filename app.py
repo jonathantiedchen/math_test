@@ -91,7 +91,8 @@ question_index = st.selectbox("🔢 Select GSM8K question index", range(len(gsm8
 
 if st.button("🎲 Pick Random Question"):
     question_index = random.randint(0, len(gsm8k_data) - 1)
-    st.query_params(question_index=question_index)
+    # Update the query parameters instead of calling it like a function
+    st.query_params.update(question_index=question_index)
 
 default_prompt = "Jasper has 5 apples and eats 2 of them. How many apples does he have left?"
 selected_question = gsm8k_data[question_index]["question"] if question_index is not None else default_prompt
